@@ -1,3 +1,5 @@
+package Charas;
+
 public abstract class MainEntity {
     public enum TypeofEntity{PLAY_ENTI, PLAY_WAR, PLAY_WIZ, ENE_WOLF, ENE_GOB};
     protected int health, defense, attack, speed;

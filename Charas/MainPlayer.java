@@ -1,3 +1,5 @@
+package Charas;
+
 public abstract class MainPlayer extends MainEntity {
     public MainPlayer(String name, int health, int attack, int defense, int speed){
         super(name, health, attack, defense, speed);

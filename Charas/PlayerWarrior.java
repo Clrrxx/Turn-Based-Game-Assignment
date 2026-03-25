@@ -1,4 +1,4 @@
-import Items.Inventory;
+package Charas;
 import java.util.List;
 import java.util.ArrayList;
 

@@ -1,3 +1,5 @@
+package Charas;
+
 public class EnemyWolf extends MainEnemy{
     private static final int BASE_HEALTH = 40;
     private static final int BASE_ATTACK = 45;
