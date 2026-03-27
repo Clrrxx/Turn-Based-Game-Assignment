@@ -19,15 +19,7 @@ public class DifficultyMedium extends Difficulty{
         return  new MainEnemy[]{ new EnemyWolf(), new EnemyWolf() };
     }
 
-    public MainEnemy[] getInitialSpawn() { return createInitial(); }
-    
-    //need to account for null
-    public MainEnemy[] getBackupSpawn() {return createBackup(); }
-
-    //the function to check if there is backupSpawn
-    public boolean hasBackupSpawn() {return backupSpawn != null;} 
-
-    public String getTier(){return "Medium";}
+    public DifficultyTier getTier(){return tier;}
 
     public void printWaveInfo() {
     System.out.println("  Initial Spawn:");

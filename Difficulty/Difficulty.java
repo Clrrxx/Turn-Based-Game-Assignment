@@ -8,20 +8,21 @@ public abstract class Difficulty {
 
   protected DifficultyTier tier; 
 
-
   public Difficulty(MainEnemy[] initialSpawn, MainEnemy[] backupSpawn){
     this.initialSpawn = initialSpawn;
     this.backupSpawn = backupSpawn;
   }
 
 
-  public abstract MainEnemy[] getInitialSpawn();
-  //need to account for null
-  public abstract MainEnemy[] getBackupSpawn();
-  //the function to check if there is backupSpawn
-  public abstract boolean hasBackupSpawn();
+  public MainEnemy[] getInitialSpawn() { return initialSpawn; }
+    
+    //need to account for null
+  public MainEnemy[] getBackupSpawn() {return backupSpawn; }
 
-  public abstract String getTier();
+    //the function to check if there is backupSpawn
+  public boolean hasBackupSpawn() {return backupSpawn != null;} 
+
+  public abstract DifficultyTier getTier();
   public abstract void printWaveInfo();
   public abstract void printEnemyCounts(MainEnemy[] wave);
 }

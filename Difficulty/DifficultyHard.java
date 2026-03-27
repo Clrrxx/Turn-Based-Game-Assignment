@@ -7,7 +7,7 @@ import Characters.MainEnemy;
 public class DifficultyHard extends Difficulty{
     public DifficultyHard(){
         super(createInitial(), createBackup());
-        this.tier = DifficultyTier.MEDIUM;
+        this.tier = DifficultyTier.HARD;
     }
 
     //define the methods as static, allows for them to be called by the super without issues
@@ -19,15 +19,7 @@ public class DifficultyHard extends Difficulty{
         return  new MainEnemy[]{ new EnemyGoblin(), new EnemyWolf(), new EnemyWolf() };
     }
 
-    public MainEnemy[] getInitialSpawn() { return createInitial(); }
-    
-    //need to account for null
-    public MainEnemy[] getBackupSpawn() {return createBackup(); }
-
-    //the function to check if there is backupSpawn
-    public boolean hasBackupSpawn() {return backupSpawn != null;} 
-
-    public String getTier(){return "Hard";}
+    public DifficultyTier getTier(){return tier;}
 
     public void printWaveInfo() {
     System.out.println("  Initial Spawn:");

@@ -107,7 +107,7 @@ public class GameApp {
       //new Potion("Potion"),
       new SmokeBomb("Smoke Bomb"),  
       //new PowerStone("Power Stone"),
-      new PowerStone("PowerStone");
+      new PowerStone("PowerStone")
     };
 
     //stores the user's choice for whichever items they want
@@ -144,8 +144,6 @@ public class GameApp {
     //Need to code out inventory in warrior and wizard, and pass the items into inventory.
 
     //user now selects Difficulty, Easy Medium or Hard, enemy needs to show their attributes too.
-    //user input
-    char userSelectDifficulty; 
     //this is the difficulty we will pass into GameSession
     Difficulty selectedDifficulty = null;
 
@@ -171,13 +169,12 @@ public class GameApp {
       if (userChoice != 'E' && userChoice != 'M' && userChoice != 'H'){
         System.out.println("Please enter a valid choice: E, M or H and press enter.");
       }else {
-        userSelectDifficulty = userChoice;
         // match char to difficulty object
         if (userChoice == 'E')      selectedDifficulty = easy;
         else if (userChoice == 'M') selectedDifficulty = medium;
         else                        selectedDifficulty = hard;
 
-        new GameSession(selectedDifficulty);
+        new GameSession(selectedDifficulty, player);
         System.out.println("You selected: " + selectedDifficulty.getTier() + " difficulty.");
         break;
       }
