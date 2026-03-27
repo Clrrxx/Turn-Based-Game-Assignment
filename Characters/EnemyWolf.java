@@ -45,6 +45,8 @@ public class EnemyWolf extends MainEnemy implements EntityAction, TickCooldown{
 
     public void tickAll(){stunTick();}
 
+    public int getActionValue(){return 1000/this.speed;}
+
     public void gameReset(){
         this.health = BASE_HEALTH;
         this.attack = BASE_ATTACK;

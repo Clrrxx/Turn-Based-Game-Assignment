@@ -27,6 +27,8 @@ public class EnemyGoblin extends MainEnemy implements EntityAction, TickCooldown
 
     public void tickAll(){stunTick();}
 
+    public int getActionValue(){return 1000/this.speed;}
+
     public int effectiveDefense(){return this.defense;}
     public int effectiveAttack(){return this.attack;}
     

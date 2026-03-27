@@ -1,12 +1,16 @@
 import java.io.*;
 import java.util.Scanner;
 import Items.Item;
+import Items.PowerStone;
 import Items.SmokeBomb;
 import Characters.EnemyGoblin;
 import Characters.EnemyWolf;
 import Characters.MainEnemy;
 import Characters.MainPlayer;
 import Difficulty.Difficulty;
+import Difficulty.DifficultyEasy;
+import Difficulty.DifficultyMedium;
+import Difficulty.DifficultyHard;
 import Characters.PlayerWizard;
 import Characters.PlayerWarrior;
 
@@ -49,12 +53,22 @@ public class GameApp {
 
     //pass it to Warrior/Wizard object, not Main Player
     MainPlayer player = null;
+    MainPlayer test = null;
+    MainPlayer test2 = null;
 
     while(true){
       System.out.println("Select your class...");
-      System.out.println("Warrior: 'Big Sword go Swoosh' has powerful attacks, higher health but lacks AOE | Press 1 and Enter.");
+      System.out.println();
 
-      System.out.println("Wizard: 'Explosionnnnn!!!' has slower Speed, lesser Health but has AOE and cool spells | Press 2 and Enter.");
+      test = new PlayerWarrior("Warrior");
+      test.showStats();
+      System.out.println("Press 1 to lock in your character. ");
+      System.out.println();
+
+      test2 = new PlayerWizard("Wizard");
+      test2.showStats();
+      System.out.println("Press 2 to lock in your character. ");
+
      
       if (scanner.hasNextInt()){
         int userInput = scanner.nextInt();
@@ -62,17 +76,17 @@ public class GameApp {
         if (userInput != 1 && userInput != 2){
               System.out.println("Invalid choice, Enter 1 or 2");
             }else if (userInput == 1){
-              System.out.println("Selected Warrior!");
+              System.out.println("Selected Warrior!\n");
               player = new PlayerWarrior(userName); 
-              System.out.println("Your stats/attributes are:");
+              System.out.println("Your stats/attributes are:\n");
               //print out attributes
               player.showStats();
               break;
             }else if (userInput == 2){
-              System.out.println("Selected Wizard!");
+              System.out.println("Selected Wizard!\n");
               player = new PlayerWizard(userName);
-              System.out.println("Your stats/attributes are:");
-              //print out attributes.
+              System.out.println("Your stats/attributes are:\n");
+              //print out attributes
               player.showStats();
               break;
             }
@@ -84,7 +98,7 @@ public class GameApp {
     }
 
     //option to pick items, so we need to show the list of items available.
-
+    System.out.println();
     System.out.println("Select 2 items to aid your adventure, " + userName);
     //BASED ON PROJECT SPECS, we HAVE to let user pick 2 items, not one or other number, but 2.
     //we also have to print the number for each item.
@@ -93,6 +107,7 @@ public class GameApp {
       //new Potion("Potion"),
       new SmokeBomb("Smoke Bomb"),  
       //new PowerStone("Power Stone"),
+      new PowerStone("PowerStone");
     };
 
     //stores the user's choice for whichever items they want
@@ -129,28 +144,14 @@ public class GameApp {
     //Need to code out inventory in warrior and wizard, and pass the items into inventory.
 
     //user now selects Difficulty, Easy Medium or Hard, enemy needs to show their attributes too.
-    
-    // --- setup difficulties ---
-      Difficulty easy = new Difficulty(
-          "Easy",
-          new MainEnemy[]{ new EnemyGoblin(), new EnemyGoblin(), new EnemyGoblin() },   // 3 goblins
-          null
-      );
-      Difficulty medium = new Difficulty(
-          "Medium",
-          new MainEnemy[]{ new EnemyGoblin(), new EnemyWolf() },
-          new MainEnemy[]{ new EnemyWolf(), new EnemyWolf() }
-      );
-      Difficulty hard = new Difficulty(
-          "Hard",
-          new MainEnemy[]{ new EnemyGoblin(), new EnemyGoblin() },
-          new MainEnemy[]{ new EnemyGoblin(), new EnemyWolf(), new EnemyWolf() }
-      );     
-
     //user input
     char userSelectDifficulty; 
     //this is the difficulty we will pass into GameSession
-    Difficulty selectedDifficulty;
+    Difficulty selectedDifficulty = null;
+
+    DifficultyEasy easy = new DifficultyEasy();
+    DifficultyMedium medium = new DifficultyMedium();
+    DifficultyHard hard = new DifficultyHard();
 
     while (true){
       System.out.println("Choose your difficulty");
@@ -175,7 +176,9 @@ public class GameApp {
         if (userChoice == 'E')      selectedDifficulty = easy;
         else if (userChoice == 'M') selectedDifficulty = medium;
         else                        selectedDifficulty = hard;
-        System.out.println("You selected: " + selectedDifficulty.getName() + " difficulty.");
+
+        new GameSession(selectedDifficulty);
+        System.out.println("You selected: " + selectedDifficulty.getTier() + " difficulty.");
         break;
       }
     }

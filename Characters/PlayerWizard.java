@@ -101,6 +101,8 @@ public class PlayerWizard extends MainPlayer implements EntityAction, TickCooldo
         this.speed = BASE_SPEED;
     }
 
+    public int getActionValue(){return 1000/this.speed;}
+
     private List<Inventory> inventory = new ArrayList<>();
     public void getInventory(){accessInventory(inventory);}
     protected void accessInventory(List <Inventory> inventory){
