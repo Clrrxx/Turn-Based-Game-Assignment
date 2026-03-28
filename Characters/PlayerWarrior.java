@@ -28,10 +28,11 @@ public class PlayerWarrior extends MainPlayer{
     //if defendturnremaining > 0 return this.def + 10
     public int effectiveDefense(){return defendTurnRemaining>0 ? this.defense + 10 : this.defense;}
     public int effectiveAttack(){return this.attack;}
+    public int getmaxHP(){return BASE_HEALTH;}
 
     //to allow for abstraction, pass a list of enemies for special skill but warrior will attack the first enemy of the list
-    public int specialSkill(MainEnemy[] enemies, int targetIndex){
-        if (skillcooldown > 0){
+    public int specialSkill(MainEnemy[] enemies, int targetIndex, boolean usedPowerstone){
+        if (skillcooldown > 0 && !usedPowerstone){
             System.out.println("Skill on cooldown");
             return 0;
         }
@@ -71,6 +72,7 @@ public class PlayerWarrior extends MainPlayer{
         System.out.println("SPD: "+this.speed);
     }
 
+    
     //for resetting of all base stats at the end of the game
     public void gameReset(){
         this.health = BASE_HEALTH;
@@ -80,6 +82,7 @@ public class PlayerWarrior extends MainPlayer{
     }
 
     public int getActionValue(){return 1000/this.speed;}
+    
 
     private Inventory[] inventory;
     public void getInventory(){accessInventory(inventory);}

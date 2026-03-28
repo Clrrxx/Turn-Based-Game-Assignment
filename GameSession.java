@@ -13,6 +13,10 @@ import Difficulty.DifficultyMedium;
 import Difficulty.DifficultyHard;
 import Difficulty.Difficulty.DifficultyTier;
 import Characters.TickCooldown;
+import Items.SmokeBomb;
+import Items.Potion;
+import Items.PowerStone;
+
 
 public class GameSession {
   //Constructor
@@ -27,6 +31,9 @@ public class GameSession {
   public void startGame(Difficulty difficulty, MainPlayer player){
     System.out.println("\nNew Game Start!\n");
     boolean gameWon = false;
+    boolean usedPowerstone = false;
+    boolean usedSmokebomb = false;
+    SmokeBomb bomb = new SmokeBomb("Smokebomb");
     char attack = ' ';
 
     Scanner newscan = new Scanner(System.in);
@@ -78,20 +85,48 @@ public class GameSession {
               break;
 
             case 'S':
-              int special = player.specialSkill(enemies, target-1);
+              //if not use Powerstone -> skill on cooldown, if use powerstone -> skill not on cooldown
+              int special = player.specialSkill(enemies, target-1, usedPowerstone);
               System.out.println("You did a total of "+special+" damage.");
               break;
             
             case 'D':
               player.defendSkill();
+              int def = player.effectiveDefense();
+              System.out.println("Defense UP! You have " +def +" now");
               break;
             
             case 'U':
               //use item
+                System.out.println("What shall you use? \nHealth Potion [H] / Smoke Bomb [S] / Power Stone [P]");
+                char item = newscan.next().toUpperCase().charAt(0);
+                switch (item){
+                  case 'H':
+                    //use health potion
+                    Potion healthPot = new Potion("HealthPot");
+                    int heal = healthPot.HealHealth(player);
+                    System.out.println("A Health Potion was used, "+heal+" HP was healed.");
+                    break;
+                  case 'S':
+                    //use smoke bomb
+                    usedSmokebomb = bomb.getUsedSmokebomb();
+                    break;
+                  case 'P':
+                    //use power stone
+                    usedPowerstone = true;
+                    System.out.println("You used a Power Stone, Free Skill Usage");
+
+                    special = player.specialSkill(enemies, target-1, usedPowerstone);
+                    System.out.println("You did a total of "+special+" damage because of the power stone.");
+                    break;
+                  default:
+                    System.out.println("Invalid Input. Try again.");
+                    playerSkipTurn = true;
+                }
               break;
             
             default:
-              System.out.println("Invalid Input Try again.");
+              System.out.println("Invalid Input. Try again.");
               playerSkipTurn = true;
           }
 
@@ -108,17 +143,22 @@ public class GameSession {
         //core logic is simple => player inputs are invalid, skip enemy turn 
         if (!playerSkipTurn){          
           for (int j = 0; j<enemiesAV.length; j++){
-            if (enemiesAV[j] == 0 && !(enemies[j].stunStatus()) && enemies[j].getHealth()>0){
+            if (enemiesAV[j] == 0 && !usedSmokebomb){
+              //punish the player => smoke bomb cooldown will take effect at the same time as special skill cooldown; both will tick down simultaneously
+              player.takeDamage(0);
+              System.out.println("Smoke bomb was used, you evaded the attack!");
+              bomb.tickAll();
+            }
+            else if (enemiesAV[j] == 0 && !(enemies[j].stunStatus()) && enemies[j].getHealth()>0){
               //enemies take turn
               int damage = enemies[j].basicAttack(player);
-              player.takeDamage(damage);
-              System.out.print("You took " + player.takeDamage(damage)+" damage. ");
+              int damageTaken = player.takeDamage(damage);
+              System.out.print("You took " + damageTaken +" damage. ");
               System.out.println("Health remaining: " + player.getHealth());
-
-              //reset enemy av
-              enemiesAV[j] = enemies[j].getActionValue();
-              enemies[j].tickAll();
             }
+            //reset enemy av
+            enemiesAV[j] = enemies[j].getActionValue();
+            enemies[j].tickAll();
           }
         }
         //check if either player health == 0 or ALL enemy health == 0
@@ -133,6 +173,7 @@ public class GameSession {
         if (player.getHealth() == 0){break;}
       }
       isGameOver = true;
+  
     }else if (difficulty.getTier() == DifficultyTier.MEDIUM){
       //medium logic
       

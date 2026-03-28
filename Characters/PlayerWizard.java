@@ -29,9 +29,9 @@ public class PlayerWizard extends MainPlayer{
         activateDefend();
     }
 
-    public int specialSkill(MainEnemy[] enemies, int targetIndex){
+    public int specialSkill(MainEnemy[] enemies, int targetIndex, boolean usedPowerstone){
         int totaldamage = 0;
-        if (this.skillcooldown > 0){
+        if (this.skillcooldown > 0 && !usedPowerstone){
             System.out.println("Skill on cooldown");
             return 0;
         }
@@ -52,6 +52,7 @@ public class PlayerWizard extends MainPlayer{
     public int skillbuff(){return attackBuff + 10 * killcount;}
     public int effectiveAttack(){return this.attack + attackBuff;}
     private void resetAttackBuff(){attackBuff = 0;}
+    public int getmaxHP(){return BASE_HEALTH;}
     
     //call reset after each use of skill, want to check eveyrtime whether wizard kills or not
     private void resetKillCount(){killcount = 0;}

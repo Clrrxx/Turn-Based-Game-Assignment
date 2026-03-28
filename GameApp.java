@@ -140,6 +140,7 @@ public class GameApp {
         scanner.nextLine(); //clears the bad input from buffer.
       }
     }
+    
 
     //Need to code out inventory in warrior and wizard, and pass the items into inventory.
 
