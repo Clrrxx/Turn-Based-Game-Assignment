@@ -13,7 +13,12 @@ public class EnemyGoblin extends MainEnemy{
         this.entitytype = TypeofEntity.ENE_GOB;
     }
 
-    public int setStun(int duration){stunTurn = duration; return stunTurn;}
+    public int setStun(int duration){
+        stunTurn = duration; 
+        if (duration > 0){
+            System.out.println(NAME + " has been stunned for "+duration + " turns.\n");
+        }
+        return stunTurn;}
     public boolean stunStatus(){return stunTurn>0;}
     private void stunTick(){if (stunTurn>0) stunTurn--;}
 
@@ -32,19 +37,6 @@ public class EnemyGoblin extends MainEnemy{
     public int effectiveDefense(){return this.defense;}
     public int effectiveAttack(){return this.attack;}
     
-
-    public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(NAME+" is already dead.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println(NAME+" has been slain");
-        }
-        return damage;
-    }
 
     //resetting for level (in case)
     public void gameReset(){

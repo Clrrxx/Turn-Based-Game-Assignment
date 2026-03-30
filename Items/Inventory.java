@@ -11,7 +11,7 @@ public class Inventory {
 
     
     public void printInventory(){
-        if (items.length == 0){
+        if (items == null){
             System.out.println("Inventory is Empty");
         }else{
             System.out.println("======Inventory======");

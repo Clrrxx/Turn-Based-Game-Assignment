@@ -1,6 +1,5 @@
 package Game;
 //The playthrough itself.
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import Characters.MainEnemy;
@@ -11,17 +10,17 @@ import Characters.EnemyWolf;
 import Characters.PlayerWizard;
 import Characters.PlayerWarrior;
 import Difficulty.DifficultyEasy;
-import Difficulty.Difficulty.DifficultyTier;
 import Items.Inventory;
 import Items.SmokeBomb;
 import Items.Item;
 
 
 public class GameSessionEasy extends MainGameSession{
-  private MainEnemy[] enemies;
-  private boolean gameWon = false;
-  private boolean usedPowerstone = false;
-  private int target;
+  protected MainEnemy[] enemies;
+  protected boolean gameWon = false;
+  protected boolean usedPowerstone = false;
+  protected boolean usedSmokebomb;
+  protected int target;
   
   //Constructor
   public GameSessionEasy(Difficulty difficulty, MainPlayer player, Inventory inventory){
@@ -29,7 +28,6 @@ public class GameSessionEasy extends MainGameSession{
     startGameEasy(difficulty, player, inventory);
   }
 
-  private SmokeBomb bomb = new SmokeBomb(99);
   public MainPlayer getPlayer(){return player;}
   public MainEnemy[] getEnemies(){return enemies;}
   public Difficulty getDifficulty(){return difficulty;}
@@ -43,10 +41,11 @@ public class GameSessionEasy extends MainGameSession{
     System.out.println("\nNew Game Start!\n");
     char attack = ' ';
   
-
     Scanner newscan = new Scanner(System.in);
     //get action value for player
     int playerAV = player.getActionValue();
+
+    SmokeBomb bomb = getSmokeBomb();
 
     //get the action value for the enemy
     this.enemies = difficulty.getInitialSpawn();
@@ -114,16 +113,25 @@ public class GameSessionEasy extends MainGameSession{
             
             case 'U':
               //use item
-                inventory.printInventory();
-                System.out.println("What shall you use? Pick your item: ");
-                int itemchoice = newscan.nextInt();
-                Item selected = inventory.getiItem(itemchoice-1);
-                if (selected.isAvailable()){
-                  selected.ApplyEffect(this);
-                  inventory.removeFromInventory(itemchoice-1);
+                boolean validInput = false;
+                while(!validInput){
                   inventory.printInventory();
+                  System.out.println("What shall you use? Pick your item: ");
+                  int itemchoice = newscan.nextInt();
+                  if (0<itemchoice && itemchoice<3){
+                    Item selected = inventory.getiItem(itemchoice-1);
+                    if (selected.isAvailable()){
+                      selected.ApplyEffect(this);
+                      inventory.removeFromInventory(itemchoice-1);
+                      inventory.printInventory();
+                    }
+                    playerValidTurn = true;
+                    validInput = true;
+                    break;
+                  }else{
+                    System.out.println("Invalid input! Try again");
+                  }
                 }
-                playerValidTurn = true;
               break;
             
             default:
@@ -142,27 +150,25 @@ public class GameSessionEasy extends MainGameSession{
       //core logic is simple => player inputs are invalid, skip enemy turn 
       
       for (int j = 0; j<enemiesAV.length; j++){
-        if (enemiesAV[j] == 0 && bomb.getUsedSmokebomb()){
-          //punish the player => smoke bomb cooldown will take effect at the same time as special skill cooldown; both will tick down simultaneously
-          player.takeDamage(0);
-          System.out.println("Smoke bomb was used, you evaded the attack!");
-          bomb.tickAll();
-          
-          enemiesAV[j] = enemies[j].getActionValue();
-          enemies[j].tickAll();
-        }
-        else if (enemiesAV[j] == 0 && !(enemies[j].stunStatus()) && enemies[j].getHealth()>0){
-          //enemies take turn
-          int damage = enemies[j].basicAttack(player);
-          int damageTaken = player.takeDamage(damage);
-          System.out.print("You took " + damageTaken +" damage. ");
-          System.out.println("Health remaining: " + player.getHealth());
+        if (enemiesAV[j] == 0){
+          if (bomb != null && bomb.getUsedSmokebomb()){
+            //punish the player => smoke bomb cooldown will take effect at the same time as special skill cooldown; both will tick down simultaneously
+            System.out.println("You evaded the attack!");
+            bomb.tickAll(); //multiply the error by enemy count 
+          }
+          else if (!enemies[j].stunStatus()){
+            //enemies take turn
+            int damage = enemies[j].basicAttack(player);
+            int damageTaken = player.takeDamage(damage);
+            System.out.print("You took " + damageTaken +" damage. ");
+            System.out.println("Health remaining: " + player.getHealth());
 
+          }
           enemiesAV[j] = enemies[j].getActionValue();
           enemies[j].tickAll();
         }
-        
       }
+
       //check if either player health == 0 or ALL enemy health == 0
       //later stages will have if ALL enemies health == 0 summons backup layer
       //if player health == 0 break the loop -> exit
@@ -189,7 +195,20 @@ public class GameSessionEasy extends MainGameSession{
       //see if need to let user to retry, to redirect to loading screen
       }
   }
+
+  //to preserve polymorphism, need to find smokebomb from inventory, since i need to use smokebomb functions.
+  //if i declare a new instance of smokebomb, code will look at that smokebomb instead of the smokebomb in inventory, => resulting in when 
+  //smoke bomb is used not correctly activated.
+
+  private SmokeBomb getSmokeBomb(){
+    for (int i = 0; i<inventory.getCount(); i++){
+      if (inventory.getiItem(i) instanceof SmokeBomb){
+        return (SmokeBomb) inventory.getiItem(i);
+      }
+    }
+    return null;
+  }
 }
 
 
-
+//inventory call should reject player when it is empty fix that pls tmr

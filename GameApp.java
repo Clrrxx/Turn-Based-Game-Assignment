@@ -112,11 +112,11 @@ public class GameApp {
 
     Item[] allItems = {
       //new Potion("Potion"),
-      new Potion( 1),
+      new Potion( 99),
       //new Smokebomb("smokebomb")
-      new PowerStone(1),  
+      new PowerStone(99),  
       //new PowerStone("Power Stone"),
-      new SmokeBomb(1)
+      new SmokeBomb(99)
     };
     int count = 0;
 
@@ -145,9 +145,9 @@ public class GameApp {
         }else{
           //duplicate items ARE allowed.
           Item selected = allItems[userSelect -1];
-          if (selected instanceof Potion) playerInv.addToInventory(new Potion(1));
-          else if (selected instanceof PowerStone) playerInv.addToInventory(new PowerStone(1));
-          else if (selected instanceof SmokeBomb) playerInv.addToInventory(new SmokeBomb(1));
+          if (selected instanceof Potion) playerInv.addToInventory(new Potion(99));
+          else if (selected instanceof PowerStone) playerInv.addToInventory(new PowerStone(99));
+          else if (selected instanceof SmokeBomb) playerInv.addToInventory(new SmokeBomb(99));
           
           //Need to implement printing of item name
           System.out.println("You selected - " + allItems[userSelect - 1].getName()+"\n");
@@ -201,3 +201,6 @@ public class GameApp {
     //with these userSelected fields, we will construct a new GameSession.
   }
 }
+
+
+

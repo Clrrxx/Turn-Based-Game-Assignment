@@ -30,19 +30,6 @@ public class EnemyWolf extends MainEnemy{
     public int effectiveDefense(){return this.defense;}
     public int effectiveAttack(){return this.attack;}
 
-    public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(NAME+" is already dead.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println(NAME+" has been slain");
-        }
-        return damage;
-    }
-
     public void tickAll(){stunTick();}
 
     public int getActionValue(){return 1000/this.speed;}

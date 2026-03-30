@@ -37,7 +37,7 @@ public class PlayerWarrior extends MainPlayer{
             System.out.println("Skill on cooldown, unable to act try again in "+ getskillcooldown() + " turns");
             return 0;
         }
-        activateSkill();
+        if(!usedPowerstone) activateSkill();
         enemies[targetIndex].setStun(stunWindow);
         int damage = basicAttack(enemies[targetIndex]);
         enemies[targetIndex].takeDamage(damage);
@@ -47,19 +47,6 @@ public class PlayerWarrior extends MainPlayer{
     public int getskillcooldown(){return skillcooldown;}
     private void tickCooldown(){if (skillcooldown > 0) skillcooldown--;}
     private void activateSkill(){skillcooldown = 3;}
-
-    public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(name+" is already dead. Your attack misses.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println("You have been slain");
-        }
-        return damage;
-    }
 
     @Override
     public void tickAll(){defendTick(); tickCooldown();}

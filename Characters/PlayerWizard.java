@@ -37,7 +37,7 @@ public class PlayerWizard extends MainPlayer{
             System.out.println("Skill on cooldown, unable to act try again in "+ getskillcooldown() + " turns");
             return 0;
         }
-        activateSkill();
+        if(!usedPowerstone) activateSkill();
         for (MainEnemy enemy : enemies){
             int damage = basicAttack(enemy);
             totaldamage += enemy.takeDamage(damage);
@@ -65,20 +65,6 @@ public class PlayerWizard extends MainPlayer{
     private void tickCooldown(){if (skillcooldown > 0) skillcooldown--;}
 
     public int effectiveDefense(){return defendTurnRemaining>0 ? this.defense + 10 : this.defense;}
-
-    public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(name+" is already dead.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        //everyone has effective defense added to their basic attack (defense is already accounted for)
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println("You have been slain");
-        }
-        return damage;
-    }
 
     @Override
     public void tickAll(){defendTick(); tickCooldown();}

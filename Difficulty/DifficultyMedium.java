@@ -22,16 +22,16 @@ public class DifficultyMedium extends Difficulty{
     public DifficultyTier getTier(){return tier;}
 
     public void printWaveInfo() {
-    System.out.println("  Initial Spawn:");
-    printEnemyCounts(initialSpawn);
+        System.out.println("  Initial Spawn:");
+        printEnemyCounts(initialSpawn);
 
-    if (hasBackupSpawn()) {
-        System.out.println("  Backup Spawn:");
-        printEnemyCounts(backupSpawn);
-    } else {
-        System.out.println("  Backup Spawn: None");
+        if (hasBackupSpawn()) {
+            System.out.println("  Backup Spawn:");
+            printEnemyCounts(backupSpawn);
+        } else {
+            System.out.println("  Backup Spawn: None");
+        }
     }
-  }
 
 
     public void printEnemyCounts(MainEnemy[] wave) {
