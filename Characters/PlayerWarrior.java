@@ -20,10 +20,9 @@ public class PlayerWarrior extends MainPlayer{
     public int basicAttack(MainEntity defender){return Math.max(0, effectiveAttack() - defender.effectiveDefense());}
     
     private void defendTick(){if (defendTurnRemaining>0) defendTurnRemaining--;}
-    private void activateDefend(){defendTurnRemaining = 2;}
+    public void activateDefend(int turns){defendTurnRemaining = turns;}
     
     public int getStunWindow(){return stunWindow;}
-    public void defendSkill(){activateDefend();}
 
     //if defendturnremaining > 0 return this.def + 10
     public int effectiveDefense(){return defendTurnRemaining>0 ? this.defense + 10 : this.defense;}
@@ -38,11 +37,26 @@ public class PlayerWarrior extends MainPlayer{
             return 0;
         }
         if(!usedPowerstone) activateSkill();
+        
         enemies[targetIndex].setStun(stunWindow);
         int damage = basicAttack(enemies[targetIndex]);
         enemies[targetIndex].takeDamage(damage);
         return damage;
     }
+
+    public int takeDamage(int damage){
+        if (this.health <= 0){ 
+            System.out.println(name+" is already dead.");
+            return 0;
+        }
+        //damage taken is strictly basic attack damage only
+        this.health = Math.max(0, this.health - damage);
+        if (this.health == 0){
+            System.out.println(name+" has been slain");
+        }
+        return damage;
+    }
+
 
     public int getskillcooldown(){return skillcooldown;}
     private void tickCooldown(){if (skillcooldown > 0) skillcooldown--;}

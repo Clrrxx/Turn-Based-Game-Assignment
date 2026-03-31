@@ -8,8 +8,8 @@ import java.util.Scanner;
 public class PowerStone extends Item{
     Scanner newScan = new Scanner(System.in);
 
-    public PowerStone(int quantity){
-        super("PowerStone", quantity);
+    public PowerStone(){
+        super("PowerStone");
     }
 
     public String getName(){return this.name;}

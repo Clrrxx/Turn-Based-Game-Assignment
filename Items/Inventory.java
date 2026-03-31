@@ -1,55 +1,49 @@
 package Items;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class Inventory {
-    private Item[] items;
-    private int count;
+    private List <Item> items;
+    private int size;
+    protected boolean invenStatus = true;
 
     public Inventory(int size){
-        this.items = new Item[size];
-        this.count = 0;
+        this.items = new ArrayList<>();
+        this.size = size;
     }
 
+    public boolean getInvenStatus(){return invenStatus;}
     
     public void printInventory(){
-        if (items == null){
-            System.out.println("Inventory is Empty");
+        if (items.isEmpty()){
+            System.out.println("Inventory is Empty\n");
+            invenStatus = false;
         }else{
             System.out.println("======Inventory======");
-            for (int i = 0; i<items.length; i++){
-                if (items[i] != null){System.out.println(i+1 +". "+ items[i].getName());}
+            for (int i = 0; i<items.size(); i++){
+                if (items != null){System.out.println(i+1 +". "+ items.get(i).getName());}
             }
         }
     }
 
-    public Item getiItem(int index){return items[index];}
-    public int getCount(){return count;}
+    public Item getiItem(int index){return items.get(index);}
+    public int getSize(){return items.size();}
 
 
     public void addToInventory(Item item){
-        if (count<items.length){
-            items[count] = item;
-            count++;
+        if (items.size()<size){
+            items.add(item);
         }else{
             System.out.println("Inventory is full");
         }
     }
 
     public void removeFromInventory(int target){
-        //if target to be removed is first element => shift left
-        //if target is last element => just reduce array size
-        if (target == 0){
-            for (int i = 0; i < count - 1; i++){
-            items[i] = items[i+1];
-            }
-            items[count-1] = null;
-            count --;
+        if (target > -1 && target < items.size()){
+            items.remove(target);
         }else{
-            items[count - 1] = null;
-            count --;
+            System.out.println("Invalid Index, Try again");
         }
-        
-        
-        
-        
     }
 }

@@ -8,4 +8,6 @@ public abstract class MainEnemy extends MainEntity{
     public abstract String getName();
     public abstract void printName();
     public abstract boolean stunStatus();
+    public abstract boolean smokeStatus();
+    public abstract int setSmoke(int duration);
 }

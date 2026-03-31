@@ -3,15 +3,14 @@ package Items;
 public abstract class Item implements ItemEffect{
     protected String name;
     protected boolean isActive;
-    protected int quantity;
+    protected int quantity = 2;
 
-    public Item(String name, int quantity){
+    public Item(String name){
         this.name = name;
-        this.quantity = quantity;
     }
 
     public int getQuantity(){return quantity;}
-    public void useItem(){if (quantity>0) quantity--;}
+    private void useItem(){if (quantity>0) quantity--;}
     public boolean isAvailable(){return quantity>0;}
     public void activate(){isActive = true; useItem();}
     public void deactivate(){isActive = false;}

@@ -40,7 +40,8 @@ public class GameSessionEasy extends MainGameSession{
   protected void startGameEasy(Difficulty difficulty, MainPlayer player, Inventory inventory){
     System.out.println("\nNew Game Start!\n");
     char attack = ' ';
-  
+    int itemchoice = 1; //garbage value first to allow the loop to run 
+
     Scanner newscan = new Scanner(System.in);
     //get action value for player
     int playerAV = player.getActionValue();
@@ -85,6 +86,9 @@ public class GameSessionEasy extends MainGameSession{
                 
                 System.out.print("\nYou did "+damage+" damage to ");
                 enemies[target-1].printName();
+              }else{
+                int damage = player.basicAttack(enemies[target-1]);
+                enemies[target-1].takeDamage(damage);
               } 
               System.out.println();
               playerValidTurn = true;
@@ -105,33 +109,33 @@ public class GameSessionEasy extends MainGameSession{
               break;
             
             case 'D':
-              player.defendSkill();
+              player.activateDefend(3);
               int def = player.effectiveDefense();
-              System.out.println("Defense UP! You have " +def +" now");
+              System.out.println("Defense UP! You have " +def +" defense now");
               playerValidTurn = true;
               break;
             
             case 'U':
               //use item
-                boolean validInput = false;
-                while(!validInput){
-                  inventory.printInventory();
+              try{
+                inventory.printInventory();
+                if (inventory.getInvenStatus()){
                   System.out.println("What shall you use? Pick your item: ");
-                  int itemchoice = newscan.nextInt();
-                  if (0<itemchoice && itemchoice<3){
-                    Item selected = inventory.getiItem(itemchoice-1);
-                    if (selected.isAvailable()){
-                      selected.ApplyEffect(this);
-                      inventory.removeFromInventory(itemchoice-1);
-                      inventory.printInventory();
-                    }
-                    playerValidTurn = true;
-                    validInput = true;
-                    break;
-                  }else{
-                    System.out.println("Invalid input! Try again");
-                  }
+                  itemchoice = newscan.nextInt();
+                  Item selected = inventory.getiItem(itemchoice-1);
+              
+                  selected.ApplyEffect(this);
+                  inventory.removeFromInventory(itemchoice-1);
+                  inventory.printInventory();
+      
+                  playerValidTurn = true;
+                
+                }else{
+                  System.out.println("Unable to use item, no more items to use\n");
                 }
+              }catch (IndexOutOfBoundsException e){
+                System.out.println("Invalid Index. Try Again\n");
+              }
               break;
             
             default:
@@ -145,23 +149,19 @@ public class GameSessionEasy extends MainGameSession{
         playerAV = player.getActionValue();
         player.tickAll();
       }
-      
       //for enemy
-      //core logic is simple => player inputs are invalid, skip enemy turn 
-      
       for (int j = 0; j<enemiesAV.length; j++){
-        if (enemiesAV[j] == 0){
-          if (bomb != null && bomb.getUsedSmokebomb()){
+        if (enemiesAV[j] == 0 && enemies[j].getHealth()>0){
+          if (bomb != null && bomb.getUsedSmokebomb()&& enemies[j].smokeStatus()){
             //punish the player => smoke bomb cooldown will take effect at the same time as special skill cooldown; both will tick down simultaneously
             System.out.println("You evaded the attack!");
-            bomb.tickAll(); //multiply the error by enemy count 
           }
-          else if (!enemies[j].stunStatus()){
+          else{
             //enemies take turn
             int damage = enemies[j].basicAttack(player);
             int damageTaken = player.takeDamage(damage);
             System.out.print("You took " + damageTaken +" damage. ");
-            System.out.println("Health remaining: " + player.getHealth());
+            System.out.println("Health remaining: " + player.getHealth()+"\n");
 
           }
           enemiesAV[j] = enemies[j].getActionValue();
@@ -201,7 +201,7 @@ public class GameSessionEasy extends MainGameSession{
   //smoke bomb is used not correctly activated.
 
   private SmokeBomb getSmokeBomb(){
-    for (int i = 0; i<inventory.getCount(); i++){
+    for (int i = 0; i<inventory.getSize(); i++){
       if (inventory.getiItem(i) instanceof SmokeBomb){
         return (SmokeBomb) inventory.getiItem(i);
       }

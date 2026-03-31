@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.List;
 
 import Items.Inventory;
 import Items.Item;
@@ -18,6 +20,7 @@ import Game.GameSessionEasy;
 import Difficulty.DifficultyHard;
 import Characters.PlayerWizard;
 import Characters.PlayerWarrior;
+
 
 //This is the main file that will run the game itself.
 public class GameApp {
@@ -112,11 +115,11 @@ public class GameApp {
 
     Item[] allItems = {
       //new Potion("Potion"),
-      new Potion( 99),
+      new Potion(),
       //new Smokebomb("smokebomb")
-      new PowerStone(99),  
+      new PowerStone(),  
       //new PowerStone("Power Stone"),
-      new SmokeBomb(99)
+      new SmokeBomb()
     };
     int count = 0;
 
@@ -145,9 +148,9 @@ public class GameApp {
         }else{
           //duplicate items ARE allowed.
           Item selected = allItems[userSelect -1];
-          if (selected instanceof Potion) playerInv.addToInventory(new Potion(99));
-          else if (selected instanceof PowerStone) playerInv.addToInventory(new PowerStone(99));
-          else if (selected instanceof SmokeBomb) playerInv.addToInventory(new SmokeBomb(99));
+          if (selected instanceof Potion) playerInv.addToInventory(new Potion());
+          else if (selected instanceof PowerStone) playerInv.addToInventory(new PowerStone());
+          else if (selected instanceof SmokeBomb) playerInv.addToInventory(new SmokeBomb());
           
           //Need to implement printing of item name
           System.out.println("You selected - " + allItems[userSelect - 1].getName()+"\n");

@@ -6,8 +6,8 @@ import Game.MainGameSession;
 public class Potion extends Item{
     private int HealAmt = 100;
 
-    public Potion(int quantity){
-        super("Health Pot", quantity);
+    public Potion(){
+        super("Health Pot");
     }
 
     public String getName(){return this.name;}
@@ -16,17 +16,19 @@ public class Potion extends Item{
         MainPlayer player = session.getPlayer();
         int currentHP = player.getHealth();
         if (currentHP == player.getbaseHP()){
-            System.out.println("You are already at full health!");
+            activate();
+            System.out.println("You are already at full health!\n");
+            deactivate();
         }
         else if (isAvailable()){
             int healed = Math.min(currentHP + HealAmt, player.getbaseHP());
             player.healHealth(healed);
 
             activate();
-            System.out.println("A Health Potion was used, "+healed+" HP was healed. You have "+player.getHealth()+ " HP now.");
+            System.out.println("A Health Potion was used, "+healed+" HP was healed. You have "+player.getHealth()+ " HP now.\n");
             deactivate();
         }else{
-            System.out.println("You ran out of items to use!");
+            System.out.println("You ran out of items to use!\n");
         }
     }
 }

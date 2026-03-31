@@ -23,11 +23,8 @@ public class PlayerWizard extends MainPlayer{
     }
 
     private void defendTick(){if (defendTurnRemaining>0) defendTurnRemaining--;}
-    private void activateDefend(){defendTurnRemaining = 2;}
-    public void defendSkill(){
-        //hard code turn count so it becomes easier
-        activateDefend();
-    }
+    public void activateDefend(int turns){defendTurnRemaining = turns;}
+    
 
     public void healHealth(int heal){this.health = heal;}
 
@@ -51,7 +48,7 @@ public class PlayerWizard extends MainPlayer{
     }
 
     //all wizard attack buffs are only active for one round
-    public int skillbuff(){return attackBuff + 10 * killcount;}
+    public void skillbuff(){attackBuff += 10 * killcount;}
     public int effectiveAttack(){return this.attack + attackBuff;}
     private void resetAttackBuff(){attackBuff = 0;}
     public int getbaseHP(){return BASE_HEALTH;}
@@ -70,6 +67,19 @@ public class PlayerWizard extends MainPlayer{
     public void tickAll(){defendTick(); tickCooldown();}
 
     public void onLevelEnd(){resetAttackBuff();}
+
+    public int takeDamage(int damage){
+        if (this.health <= 0){ 
+            System.out.println(name+" is already dead.");
+            return 0;
+        }
+        //damage taken is strictly basic attack damage only
+        this.health = Math.max(0, this.health - damage);
+        if (this.health == 0){
+            System.out.println(name+" has been slain");
+        }
+        return damage;
+    }
 
     @Override
     public void showStats(){
