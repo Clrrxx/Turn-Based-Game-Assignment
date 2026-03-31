@@ -73,7 +73,11 @@ public class GameSessionHard extends MainGameSession{
 
             switch (attack){
                 case 'B':
-                    System.out.println("Choose who to attack: [1, 2]");
+                    System.out.println("Choose who to attack: ");
+                    System.out.print("[");
+                    for (int i = 0; i<enemies.length; i++) System.out.print(i + ", ");
+                    System.out.print("]");
+                    
                     target = newscan.nextInt();
                     if (enemies[target-1].getHealth() > 0){
                         int damage = player.basicAttack(enemies[target-1]);
