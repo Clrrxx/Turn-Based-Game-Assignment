@@ -165,7 +165,7 @@
     //if i declare a new instance of smokebomb, code will look at that smokebomb instead of the smokebomb in inventory, => resulting in when 
     //smoke bomb is used not correctly activated.
 
-    private SmokeBomb getSmokeBomb(){
+    protected SmokeBomb getSmokeBomb(){
         for (int i = 0; i<inventory.getSize(); i++){
             if (inventory.getiItem(i) instanceof SmokeBomb){
                 return (SmokeBomb) inventory.getiItem(i);
@@ -173,28 +173,26 @@
         }
         return null;
     }
-        protected void playerDoBasicAttack(int target){
+    protected void playerDoBasicAttack(int target){
         if (enemies[target-1].getHealth() > 0){
-        int damage = player.basicAttack(enemies[target-1]);
-        enemies[target-1].takeDamage(damage);
-        
-        System.out.print("\nYou did "+damage+" damage to ");
-        enemies[target-1].printName();
+            int damage = player.basicAttack(enemies[target-1]);
+            enemies[target-1].takeDamage(damage);
+            
+            System.out.print("\nYou did "+damage+" damage to ");
+            enemies[target-1].printName();
         }else{
-        int damage = player.basicAttack(enemies[target-1]);
-        enemies[target-1].takeDamage(damage);
-        } 
-        System.out.println();
+            int damage = player.basicAttack(enemies[target-1]);
+            enemies[target-1].takeDamage(damage);
+        }
     }
 
     protected boolean playerDoSKill(int target){
         if (player.getskillcooldown()>0){
-        player.specialSkill(enemies, target-1, usedPowerstone);
-        return false;
+            player.specialSkill(enemies, target-1, usedPowerstone);
+            return false;
         }else{
-        //if not use Powerstone -> skill on cooldown, if use powerstone -> skill not on cooldown
-        int special = player.specialSkill(enemies, target-1, usedPowerstone);
-        System.out.println("You did a total of "+special+" damage.");
+            int special = player.specialSkill(enemies, target-1, usedPowerstone);
+            System.out.println("You did a total of "+special+" damage.");
         return true;
         }
     }
@@ -209,11 +207,11 @@
 
     protected void gameStatus(boolean gameWon){
         if (gameWon == true){
-        System.out.println("You have conquered the dungeon, ");
-        System.out.println("You Win!!");
+            System.out.println("You have conquered the dungeon, ");
+            System.out.println("You Win!!");
         }else {
-        System.out.println("YOU DIED");
-        System.out.println("Game Over!!");
+            System.out.println("YOU DIED");
+            System.out.println("Game Over!!");
         }
     }
 

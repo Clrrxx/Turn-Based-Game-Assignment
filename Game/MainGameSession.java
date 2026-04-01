@@ -4,6 +4,7 @@ import Characters.MainEnemy;
 import Characters.MainPlayer;
 import Difficulty.Difficulty;
 import Items.Inventory;
+import Items.SmokeBomb;
 
 public abstract class MainGameSession {
     protected MainPlayer player;
@@ -21,4 +22,12 @@ public abstract class MainGameSession {
     public abstract Inventory getInven();
     public abstract Difficulty getDifficulty();
     public abstract int getTarget();
+
+    protected abstract SmokeBomb getSmokeBomb();
+    protected abstract void playerDoBasicAttack(int target);
+    protected abstract boolean playerDoSKill(int target);
+    protected abstract boolean playerUseItem(int itemchoice);
+    protected abstract void gameStatus(boolean gameWon);
+    protected abstract void enemyDoDamage(int num);
+
 }
