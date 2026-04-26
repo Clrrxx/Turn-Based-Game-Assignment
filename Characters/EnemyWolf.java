@@ -9,25 +9,18 @@ public class EnemyWolf extends MainEnemy{
     private int stunTurn = 0;
     private int smokeTurn = 0;
 
-    public EnemyWolf(){
+    private final ActionStrat actionStrat;
+
+    public EnemyWolf(ActionStrat actionStrat){
         super(BASE_HEALTH, BASE_ATTACK, BASE_DEFENSE, BASE_SPEED);
         this.entitytype = TypeofEntity.ENE_WOLF;
+        this.actionStrat = actionStrat;
     }
     
-    public int basicAttack(MainEntity defender){
-        if (stunStatus()){
-            System.out.println(NAME + " is stunned, unable to take action.");
-            return 0;
-        }
-        else if (smokeStatus()){
-            System.out.println("SmokeBomb was used, unable to take action.");
-            return 0;
-        }
-        return Math.max(0, effectiveAttack() - defender.effectiveDefense());
+    public int takeTurn(MainEntity target){
+        return actionStrat.execute(this, target);
     }
 
-    //warrior skill cooldown will be longer than the stunwindow for mobs
-    //pass player.getStunWindow() through setstun
     public int setStun(int duration){stunTurn = duration; return stunTurn;}
     public boolean stunStatus(){return stunTurn>0;}
     private void stunTick(){if (stunTurn>0) stunTurn--;}
@@ -44,21 +37,14 @@ public class EnemyWolf extends MainEnemy{
     public int effectiveAttack(){return this.attack;}
     public boolean smokeStatus(){return smokeTurn>0;}
     private void smokeTick(){if (smokeTurn>0) smokeTurn--;}
+    public int getSkillCooldown(){return 0;}
 
     public void tickAll(){stunTick();smokeTick();}
     
     public int getActionValue(){return 1000/this.speed;}
     
     public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(NAME+" is already dead. Your attack misses.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println(NAME+" has been slain");
-        }
+        this.health = Math.max(0, this.health - damage); 
         return damage;
     }
 
@@ -72,7 +58,6 @@ public class EnemyWolf extends MainEnemy{
     public String getName(){return NAME;}
     public void printName(){System.out.print(NAME);}
 
-    @Override
     public void showStats(){
         System.out.println(NAME);
         System.out.println("HP: "+this.health);

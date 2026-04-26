@@ -9,10 +9,38 @@ public class EnemyGoblin extends MainEnemy{
     private int stunTurn = 0;
     private int smokeTurn = 0;
 
-    public EnemyGoblin(){
+    private final ActionStrat actionStrat;
+
+
+    public EnemyGoblin(ActionStrat actionStrat){
         super(BASE_HEALTH, BASE_ATTACK, BASE_DEFENSE, BASE_SPEED);
         this.entitytype = TypeofEntity.ENE_GOB;
+        this.actionStrat = actionStrat;
     }
+
+    public int takeTurn(MainEntity target){
+        return actionStrat.execute(this, target);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public int setStun(int duration){
         stunTurn = duration; 
@@ -34,18 +62,8 @@ public class EnemyGoblin extends MainEnemy{
 
     public boolean smokeStatus(){return smokeTurn>0;}
     private void smokeTick(){if (smokeTurn>0) smokeTurn--;}
+    public int getSkillCooldown(){return 0;}
 
-    public int basicAttack(MainEntity defender){
-        if (stunStatus()){
-            System.out.println(NAME + " is stunned, unable to take action.");
-            return 0;
-        }
-        else if (smokeStatus()){
-            System.out.println("SmokeBomb was used, unable to take action.");
-            return 0;
-        }
-        return Math.max(0, effectiveAttack() - defender.effectiveDefense());
-    }
 
     public void tickAll(){stunTick();smokeTick();}
 
@@ -55,15 +73,7 @@ public class EnemyGoblin extends MainEnemy{
     public int effectiveAttack(){return this.attack;}
     
     public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(NAME+" is already dead. Your attack misses.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println(NAME+" has been slain");
-        }
+        this.health = Math.max(0, this.health - damage); 
         return damage;
     }
 

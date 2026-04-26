@@ -11,14 +11,19 @@ public class PlayerWarrior extends MainPlayer{
     private int skillcooldown = 0;
     private int stunWindow = 2;
 
+    private final ActionStrat actionStrat;
 
-    public PlayerWarrior(String name){
+
+    public PlayerWarrior(String name, ActionStrat actionStrat){
         super(name, BASE_HEALTH, BASE_ATTACK, BASE_DEFENSE, BASE_SPEED);
         this.entitytype = TypeofEntity.PLAY_WAR;
+        this.actionStrat = actionStrat;
     }
 
-    public int basicAttack(MainEntity defender){return Math.max(0, effectiveAttack() - defender.effectiveDefense());}
-    
+    public int takeTurn(MainEntity target){
+        return actionStrat.execute(this, target);
+    }
+
     private void defendTick(){if (defendTurnRemaining>0) defendTurnRemaining--;}
     public void activateDefend(int turns){defendTurnRemaining = turns;}
     
@@ -30,35 +35,14 @@ public class PlayerWarrior extends MainPlayer{
     public int getbaseHP(){return BASE_HEALTH;}
     public void healHealth(int heal){this.health = heal;}
 
-    //to allow for abstraction, pass a list of enemies for special skill but warrior will attack the first enemy of the list
-    public int specialSkill(MainEnemy[] enemies, int targetIndex, boolean usedPowerstone){
-        if (skillcooldown > 0 && !usedPowerstone){
-            System.out.println("Skill on cooldown, unable to act try again in "+ getskillcooldown() + " turns");
-            return 0;
-        }
-        if(!usedPowerstone) activateSkill();
-        
-        enemies[targetIndex].setStun(stunWindow);
-        int damage = basicAttack(enemies[targetIndex]);
-        enemies[targetIndex].takeDamage(damage);
-        return damage;
-    }
 
     public int takeDamage(int damage){
-        if (this.health <= 0){ 
-            System.out.println(name+" is already dead.");
-            return 0;
-        }
-        //damage taken is strictly basic attack damage only
-        this.health = Math.max(0, this.health - damage);
-        if (this.health == 0){
-            System.out.println(name+" has been slain");
-        }
+        this.health = Math.max(0, this.health - damage); 
         return damage;
     }
 
 
-    public int getskillcooldown(){return skillcooldown;}
+    public int getSkillCooldown(){return skillcooldown;}
     private void tickCooldown(){if (skillcooldown > 0) skillcooldown--;}
     private void activateSkill(){skillcooldown = 3;}
     public void onLevelEnd(){}
@@ -66,7 +50,7 @@ public class PlayerWarrior extends MainPlayer{
     @Override
     public void tickAll(){defendTick(); tickCooldown();}
 
-    @Override
+    
     public void showStats(){
         System.out.println("Warrior: ");
         System.out.println("HP: "+this.health);
