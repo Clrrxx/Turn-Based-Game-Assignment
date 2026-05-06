@@ -1,49 +1,39 @@
 package Items;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class Inventory {
-    private List <Item> items;
-    private int size;
-    protected boolean invenStatus = true;
+    private final Map<String, Item> items = new LinkedHashMap<>();
+    private final Map<String, Integer> quantities = new HashMap<>();
 
-    public Inventory(int size){
-        this.items = new ArrayList<>();
-        this.size = size;
+    public void addItem(Item item, int count){
+        items.put(item.getName(), item);
+        quantities.merge(item.getName(), count, Integer::sum);
     }
 
-    public boolean getInvenStatus(){return invenStatus;}
-    
-    public void printInventory(){
-        if (items.isEmpty()){
-            System.out.println("Inventory is Empty\n");
-            invenStatus = false;
-        }else{
-            System.out.println("======Inventory======");
-            for (int i = 0; i<items.size(); i++){
-                if (items != null){System.out.println(i+1 +". "+ items.get(i).getName());}
-            }
-        }
+    public boolean hasItem(String name){
+        return quantities.getOrDefault(name, 0) > 0;
     }
 
-    public Item getiItem(int index){return items.get(index);}
-    public int getSize(){return items.size();}
-
-
-    public void addToInventory(Item item){
-        if (items.size()<size){
-            items.add(item);
-        }else{
-            System.out.println("Inventory is full");
-        }
+    public Optional<Item> getItem(String name){
+        return Optional.ofNullable(items.get(name));
     }
 
-    public void removeFromInventory(int target){
-        if (target > -1 && target < items.size()){
-            items.remove(target);
-        }else{
-            System.out.println("Invalid Index, Try again");
-        }
+    public void consumeItem(String item){
+        quantities.compute(item, (k, v) -> v > 1 ? v - 1 : null);
+    }
+
+    public Map<String, Integer> getQuantities(){
+        return Collections.unmodifiableMap(quantities);
+    }
+
+    public void printInv(){
+        System.out.println("=======Inventory=======");
+        items.forEach((name, item) -> 
+        System.out.println(name + " x" + quantities.getOrDefault(name, 0)));
+        System.out.println("=======================");
     }
 }

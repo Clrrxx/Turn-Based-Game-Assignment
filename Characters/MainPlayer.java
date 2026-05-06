@@ -1,6 +1,7 @@
 package Characters;
 
-public abstract class MainPlayer extends MainEntity implements PlayerBuff{
+
+public abstract class MainPlayer extends MainEntity{
     public MainPlayer(String name, int health, int attack, int defense, int speed){
         super(name, health, attack, defense, speed);
     }
@@ -10,6 +11,5 @@ public abstract class MainPlayer extends MainEntity implements PlayerBuff{
 
     public abstract void gameReset();
     public abstract int getbaseHP();
-    public abstract void onLevelEnd();
-     
+    
 }   

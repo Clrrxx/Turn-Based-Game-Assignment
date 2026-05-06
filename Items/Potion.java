@@ -1,34 +1,28 @@
 package Items;
-import Characters.MainPlayer;
-import Game.MainGameSession;
 
+import Characters.MainEntity;
+import Game.BattleUI;
+import StatusEffects.HealEffect;
+
+import java.util.List;
 
 public class Potion extends Item{
-    private int HealAmt = 100;
-
-    public Potion(){
+    public Potion(int healAmt){
         super("Health Pot");
     }
 
-    public String getName(){return this.name;}
-
-    public void ApplyEffect(MainGameSession session){
-        MainPlayer player = session.getPlayer();
-        int currentHP = player.getHealth();
-        if (currentHP == player.getbaseHP()){
-            activate();
-            System.out.println("You are already at full health!\n");
-            deactivate();
+    @Override
+    public void useItem(MainEntity player, List<MainEntity> enemies){
+        BattleUI UI = new BattleUI();
+        
+        if (player.getHealth() == player.getbaseHP()){
+            System.out.println("Health is full already.");
+            return;
         }
-        else if (isAvailable()){
-            int healed = Math.min(currentHP + HealAmt, player.getbaseHP());
-            player.healHealth(healed);
 
-            activate();
-            System.out.println("A Health Potion was used, "+healed+" HP was healed. You have "+player.getHealth()+ " HP now.\n");
-            deactivate();
-        }else{
-            System.out.println("You ran out of items to use!\n");
-        }
+        new HealEffect(100).applyEffect(player);
+        System.out.println("Health potion used." + player.getName() + " new health is " + player.getHealth() + " HP.");
+        UI.displayPlayerHealth(null);
     }
+    public String getName(){return this.name;}
 }

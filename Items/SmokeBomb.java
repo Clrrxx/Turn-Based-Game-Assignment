@@ -1,35 +1,22 @@
 package Items;
-import Characters.TickCooldown;
-import Game.MainGameSession;
-import Characters.MainEnemy;
 
-public class SmokeBomb extends Item implements TickCooldown{
-    private int ItemDuration = 0; //how many turns the smoke bomb will last for, can be changed for balancing
-    
-    
+import java.util.List;
+
+import Characters.MainEntity;
+import StatusEffects.SmokeBombEffect;
+
+public class SmokeBomb extends Item{
     public SmokeBomb(){
         super("SmokeBomb");
     }
 
-    private void ItemTick(){if (ItemDuration > 0) ItemDuration--;}
+    @Override
+    public void useItem(MainEntity player, List<MainEntity> enemies){
+        SmokeBombEffect smoke = new SmokeBombEffect(3);
+        enemies.forEach(smoke::applyEffect);
 
-    public boolean getUsedSmokebomb(){return ItemDuration>0;}
-    public void useSmokebomb(){ItemDuration = 2;}
-
-    public void tickAll(){ItemTick();}
-
-    public String getName(){return this.name;}
-    public void ApplyEffect(MainGameSession session){
-        MainEnemy[] enemies = session.getEnemies(); 
-        if (isAvailable()){
-            activate();
-            for (int i = 0; i<enemies.length; i++){
-                useSmokebomb();
-                enemies[i].setSmoke(ItemDuration);
-            }
-            System.out.println("\nA SmokeBomb was used.\n");
-            deactivate();
-        }
+        System.out.println("Smoke Used, the battlefield is covered.");
     }
-
+    
+    public String getName(){return this.name;}
 }

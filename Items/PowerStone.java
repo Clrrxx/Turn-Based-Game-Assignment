@@ -1,38 +1,67 @@
 package Items;
 
-import Characters.MainPlayer;
-import Game.MainGameSession;
-import Characters.MainEnemy;
 import java.util.Scanner;
+import Characters.MainEntity;
+import Strategies.AoeTargetPS;
+import Strategies.SingleTargetPS;
+import Strategies.UniSkill;
+
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class PowerStone extends Item{
-    Scanner newScan = new Scanner(System.in);
-
+    Scanner newscan = new Scanner(System.in);
+    
+    
     public PowerStone(){
         super("PowerStone");
     }
 
     public String getName(){return this.name;}
-    
-    //since power stone gives a free use of skill, dont need to think so hard
 
-    public void ApplyEffect(MainGameSession session){
-        MainPlayer player = session.getPlayer();
-        MainEnemy[] enemies = session.getEnemies();
-        if (isAvailable()){
-            activate();
-            System.out.println("You used a Power Stone, Free Skill Usage");
-            System.out.println("Choose who to attack: ");
-            System.out.print("[");
-            for (int i = 0; i<enemies.length; i++){System.out.print(i+1); if (i<enemies.length-1){System.out.print(", ");}}
-            System.out.print("]\n");
-            int target = newScan.nextInt();
+    @Override
+    public void useItem(MainEntity player, List<MainEntity> enemies){
+        System.out.println("PowerStone used - Free use of skill");
+        
+        UniSkill aoeSkillPS = new AoeTargetPS(0);
+        UniSkill singleSkillPS = new SingleTargetPS(0);
 
-            int special = player.specialSkill(enemies, target-1, true);
-            System.out.println("You did a total of "+special+" damage because of the PowerStone. \n");
-            deactivate();
+        UniSkill skill = player.isAoE() ? aoeSkillPS:singleSkillPS;
+
+        List<MainEntity> targets = selectTargets(player, enemies);
+        skill.execute(player, targets);
+    }
+
+    private MainEntity selectTarget(List<MainEntity> enemies){
+        List<MainEntity> living = enemies.stream().filter(e->e.getHealth()>0).collect(Collectors.toList());
+        
+
+        System.out.print("\nChoose who to attack: \n");
+        for (int i = 0; i<living.size(); i++){
+            System.out.print("[" + (i+1) + "] " + living.get(i).getName() + " ("+living.get(i).getHealth()+")  ");
+        }
+        System.out.println("\n");
+        
+        while (true){
+            try{
+                int target = newscan.nextInt();
+                if (target < 1 || target > living.size()){System.out.println("Out of range, try again."); continue;}
+
+                return living.get(target-1);
+
+            }catch(InputMismatchException e){
+                System.out.println("Invalid input, try again.");
+                newscan.nextLine();
+            }
+        }
+    }
+
+    private List<MainEntity> selectTargets(MainEntity player, List<MainEntity> enemies){
+        if (player.isAoE()){
+            return enemies.stream().filter(e->e.getHealth()>0).collect(Collectors.toList());
         }else{
-            System.out.println("You ran out of items to use!");
+            return List.of(selectTarget(enemies));
         }
     }
 }

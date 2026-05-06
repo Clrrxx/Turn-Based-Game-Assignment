@@ -1,218 +1,254 @@
 package Game;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
 //The playthrough itself.
 import java.util.Scanner;
+import java.util.stream.Collectors;
+import java.util.Map;
 
-import Characters.MainEnemy;
+import Characters.MainEntity;
 import Characters.MainPlayer;
 import Difficulty.Difficulty;
 import Items.Inventory;
-import Items.SmokeBomb;
-import Items.Item;
+import StatusEffects.TickingStatusEffect;
+import Strategies.BasicAtkStrat;
+import Strategies.SelfSkill;
+import Strategies.TurnOrder;
+import Strategies.UniSkill;
 
 
 public class GameSessionHard extends MainGameSession{
-    protected MainEnemy[] enemies;
-    protected boolean gameWon = false;
-    protected boolean usedPowerstone = false;
-    protected boolean usedSmokebomb;
-    protected int target;
-    
-    //Constructor
-    public GameSessionHard(Difficulty difficulty, MainPlayer player, Inventory inventory){
-        super(difficulty, player, inventory);
-        startGameEasy(difficulty, player, inventory);
-    }
+  protected boolean gameWon = false;
+  protected boolean usedPowerstone = false;
+  protected boolean usedSmokebomb;
+  protected List<MainEntity> enemies;
+  protected int target;
+  protected boolean playerDead = false;
+  protected static int count = 0;
+  Scanner newscan = new Scanner(System.in);
+  
+  private final TurnOrder turnOrder;
+  private final BasicAtkStrat basicAtk;
+  private final SelfSkill selfSkill;
+  private final UniSkill aoeSkill;
+  private final UniSkill singleSkill;
+  
+  BattleUI BUI = new BattleUI();
 
-    public MainPlayer getPlayer(){return player;}
-    public MainEnemy[] getEnemies(){return enemies;}
-    public Difficulty getDifficulty(){return difficulty;}
-    public Inventory getInven(){return inventory;}
-    public int getTarget(){return target;}
-    
+  public GameSessionHard(Difficulty difficulty, MainPlayer player, 
+    Inventory inventory, TurnOrder turnOrder, 
+    BasicAtkStrat basicAtk,SelfSkill selfSkill, 
+    UniSkill aoeSkill, UniSkill singleSkill){
 
-    protected void startGameEasy(Difficulty difficulty, MainPlayer player, Inventory inventory){
-        System.out.println("\nNew Game Start!\n");
-        char attack = ' ';
-        int itemchoice = 1;
+    super(difficulty, player, inventory);
+    enemies = difficulty.getInitialSpawn();
+    this.turnOrder = turnOrder;
+    this.turnOrder.initialize(player, enemies);
+    this.basicAtk = basicAtk;
+    this.selfSkill = selfSkill;
+    this.aoeSkill = aoeSkill;
+    this.singleSkill = singleSkill;
+  }
 
-        Scanner newscan = new Scanner(System.in);
-        int playerAV = player.getActionValue();
-        SmokeBomb bomb = getSmokeBomb();
+  public MainPlayer getPlayer(){return player;}
+  public Difficulty getDifficulty(){return difficulty;}
+  public Inventory getInven(){return inventory;}
+  public int getTarget(){return target;}
+  
+  public void runWave(List<MainEntity> waveEnemies){
+    turnOrder.initialize(player, waveEnemies);
+    gameWon = false;
+    UniSkill skill = player.isAoE() ? aoeSkill:singleSkill;
 
+    while(!gameWon && !playerDead){
+      MainEntity current = turnOrder.getNextPlayer(player, waveEnemies);
+      if (current == null) continue;
 
-        this.enemies = difficulty.getInitialSpawn();
-        int[] enemiesAV = new int[enemies.length];
-        for (int i = 0; i<enemies.length; i++){enemiesAV[i] = enemies[i].getActionValue();}
+      if (current instanceof MainPlayer){ 
+        count++;
         
-        System.out.println();
-        difficulty.printEnemy(enemies);
-        System.out.println();
+        if (current.getHealth() <= 0){
+          playerDead = true;
+        }else{
+          System.out.println("Turn Count: "+count);
+          handlePlayerTurn(skill);
+          skill.skillTickDown();
+        }
+      }else{ 
+        handleEnemyTurn(current);
+      }
+      gameWon = allDead();      
+      turnOrder.reset(current);
+      tickStatus(current);
+    }
+  }
+
+  public void runCombatHard(){
+    System.out.println("\n\n\nGame Start! Wave 1/2\n\n\n");
+    BUI.displayPlayerBattleStats(player);
+    runWave(difficulty.getInitialSpawn());
+
+    if (!playerDead){
+        System.out.println("\n\nWave 2/2 has spawned\n\n");
+        runWave(difficulty.getBackupSpawn());
+    }
+    gameStatus(gameWon);
+  }
+
+  protected boolean allDead(){
+    for (MainEntity enemy: enemies){
+        if (enemy.getHealth() > 0) {return false;}
+      }
+    return true;
+  }
+
+  private void handlePlayerTurn(UniSkill skill){
+    boolean validInput = false;
+
+    while (!validInput){
+      System.out.println("\nWhat shall you do? \nBasic Attack [B] / Special Attack [S] / Defense Buff [D] / Use Item [U]");
+      char attack = newscan.next().toUpperCase().charAt(0);
+
+      switch (attack){
+        case 'B' ->{
+          MainEntity target = selectTarget();
+          int damage = basicAtk.execute(player, target);
+          System.out.println("\nYou did " + damage + " damage to " + target.getName());
+          
+          target.takeDamage(damage);
+          if (target.getHealth() == 0){System.out.println(target.getName() + " has been slain. \n");}
+          
+          validInput = true;
+        }
+
+        case 'S' ->{
+          if (!skill.onCooldown()){
+            System.out.println("Special Skill used: ");
+            List<MainEntity> targets = selectTargets(player);
+            skill.execute(player, targets);
+            validInput = true;
+          }else{
+            System.out.println("Skill on cooldown");
+          }
+        }
+
+        case 'D' ->{
+          selfSkill.execute(player);
+          int def = player.effectiveDefense();
+          System.out.println("Defense UP! You have " +def +" defense now");
+          validInput = true;
+        }
+
+        case 'U' ->{
+          handleItems();
+          validInput = true;
+        }
+
+        default ->{
+          System.out.println("Invalid, try again.");
+        }
+      }
+    }
+    difficulty.printEnemy(enemies);
+    System.out.println("\n");
+  }
+
+  private void handleEnemyTurn(MainEntity current){
+    if (current.getHealth() <= 0) return;
+
+    if (current.isStunned()){
+      System.out.println(current.getName() + " is stunned, unable to act.\n");
+
+    }else if (current.isSmoked()){
+      System.out.println("Battlefield is covered in Smoke, " + current.getName() + "is unable to act.");
     
-        while (!gameWon){
-            boolean playerValidTurn = false;
+    }else{
+      System.out.println(current.getName() + "(" + current.getHealth() + "HP) takes their turn!");
+      int damage = basicAtk.execute(current, player);
 
+      System.out.println(current.getName() + " does " + damage + " damage to you.\n");
+      player.takeDamage(damage);
 
-            //every loop ticks player and enemies av down like for star rail and final fantasy
-            playerAV --;
-            for (int i = 0; i<enemiesAV.length; i++) enemiesAV[i]--;
-            
-            if (playerAV == 0){
-                while(!playerValidTurn){
-                    System.out.println("\nWhat shall you do? \nBasic Attack [B] / Special Attack [S] / Defense Buff[D] / Use Item [U]");
-                    attack = newscan.next().toUpperCase().charAt(0);
-
-                    switch (attack){
-                        case 'B':
-                            System.out.println("Choose who to attack: ");
-                            System.out.print("[");
-                            for (int i = 0; i<enemies.length; i++){System.out.print(i+1); if (i<enemies.length-1){System.out.print(", ");}}
-                            System.out.print("]\n");
-
-                            target = newscan.nextInt();
-                            playerDoBasicAttack(target);
-                            playerValidTurn = true;
-                            break;
-
-                        case 'S':
-                            System.out.println("Choose who to attack: ");
-                            System.out.print("[");
-                            for (int i = 0; i<enemies.length; i++){System.out.print(i+1); if (i<enemies.length-1){System.out.print(", ");}}
-                            System.out.print("]\n");
-
-                            target = newscan.nextInt();
-                            playerValidTurn = playerDoSKill(target);
-                            break;
-                        
-                        case 'D':
-                            player.activateDefend(3);
-                            int def = player.effectiveDefense();
-                            System.out.println("Defense UP! You have " +def +" defense now");
-                            playerValidTurn = true;
-                            break;
-                        
-                        case 'U':
-                            try{
-                                inventory.printInventory();
-                                if (inventory.getInvenStatus()){
-                                System.out.println("What shall you use? Pick your item: ");
-                                itemchoice = newscan.nextInt();
-                                playerValidTurn = playerUseItem(itemchoice);
-                                }else{
-                                System.out.println("Unable to use item, no more items to use\n");
-                                }
-                            }catch (IndexOutOfBoundsException e){
-                                System.out.println("Invalid Index. Try Again\n");
-                            }
-                            break;
-                            
-                        default:
-                        System.out.println("Invalid Input. Try again.");
-                        }
-                    }
-                System.out.println("\nThe health of the enemies remaining: ");
-                difficulty.printEnemy(enemies);
-                System.out.println("\n");
-
-                playerAV = player.getActionValue();
-                player.tickAll();
-            }
-
-            for (int j = 0; j<enemiesAV.length; j++){
-                if (enemiesAV[j] == 0 && enemies[j].getHealth()>0){
-                if (bomb != null && bomb.getUsedSmokebomb()&& enemies[j].smokeStatus()){
-                    //punish the player => smoke bomb cooldown will take effect at the same time as special skill cooldown; both will tick down simultaneously
-                    System.out.println("You evaded the attack!");
-                }
-                else{
-                    //enemies take turn
-                    enemyDoDamage(j);
-                }
-                enemiesAV[j] = enemies[j].getActionValue();
-                enemies[j].tickAll();
-                }
-            }
-
-            int level = 0;
-            boolean allDead = true;
-
-            for (MainEnemy enemy: enemies){
-                if (enemy.getHealth() > 0) {allDead = false;}
-            }
-            if (allDead == true && level < 3){    //3 waves for hard
-                this.enemies = difficulty.getBackupSpawn();
-                player.onLevelEnd();
-                level++;
-            }else{
-                gameWon = true;
-            }
-            if (player.getHealth() == 0){break;}
-            }
-
-        gameStatus(gameWon);
-        newscan.close();
+      BUI.displayPlayerHealth(player);
+      System.out.println("\n");
     }
+  }
 
-  //to preserve polymorphism, need to find smokebomb from inventory, since i need to use smokebomb functions.
-  //if i declare a new instance of smokebomb, code will look at that smokebomb instead of the smokebomb in inventory, => resulting in when 
-  //smoke bomb is used not correctly activated.
+  private MainEntity selectTarget(){
+    List<MainEntity> living = enemies.stream().filter(e->e.getHealth()>0).collect(Collectors.toList());
+    
+    difficulty.printEnemy(living);
+    System.out.print("\nChoose who to attack: [");
+    for (int i = 0; i<living.size(); i++){System.out.print(i+1); if (i<living.size()-1){System.out.print(", ");}}
+    System.out.print("]\n");
 
-    protected SmokeBomb getSmokeBomb(){
-        for (int i = 0; i<inventory.getSize(); i++){
-        if (inventory.getiItem(i) instanceof SmokeBomb){
-            return (SmokeBomb) inventory.getiItem(i);
-        }
-        }
-        return null;
-    }
+    while (true){
+      try{
+        int target = newscan.nextInt();
+        if (target < 1 || target > living.size()){System.out.println("Out of range, try again."); continue;}
 
-    protected void playerDoBasicAttack(int target){
-        if (enemies[target-1].getHealth() > 0){
-            int damage = player.basicAttack(enemies[target-1]);
-            enemies[target-1].takeDamage(damage);
+        return living.get(target-1);
         
-            System.out.print("\nYou did "+damage+" damage to ");
-            enemies[target-1].printName();
-        }else{
-            int damage = player.basicAttack(enemies[target-1]);
-            enemies[target-1].takeDamage(damage);
-        } 
+      }catch(InputMismatchException e){
+        System.out.println("Invalid input, try again.");
+        newscan.nextLine();
+      }
+    }
+  }
+
+  private List<MainEntity> selectTargets(MainEntity player){
+    if (player.isAoE()){
+      return enemies.stream().filter(e->e.getHealth()>0).collect(Collectors.toList());
+    }else{
+      return List.of(selectTarget());
+    }
+  }
+
+  private void tickStatus(MainEntity player){
+    player.getStatusEffects().forEach(e -> e.onTurnEnd(player));
+    player.getStatusEffects().removeIf(TickingStatusEffect::isExpired);
+  }
+
+  private void handleItems(){
+    Map<String, Integer> available = inventory.getQuantities();
+    if (available.isEmpty()) {
+      System.out.println("Inventory is Empty");
+      return;
     }
 
-    protected boolean playerDoSKill(int target){
-        if (player.getskillcooldown()>0){
-            player.specialSkill(enemies, target-1, usedPowerstone);
-            return false;
-        }else{
-            int special = player.specialSkill(enemies, target-1, usedPowerstone);
-            System.out.println("You did a total of "+special+" damage.");
-            return true;
-        }
-    }
+    boolean validItemUse = false;
+    while(!validItemUse){
+      System.out.println("What shall you use?");
+      List<String> itemNames = new ArrayList<>(available.keySet());
+      for (int i = 0; i<itemNames.size(); i++){
+        System.out.println(" ["+ (i+1) + "] " + itemNames.get(i) + " x" + available.get(itemNames.get(i)));
+      }
 
-    protected boolean playerUseItem(int itemchoice){
-        Item selected = inventory.getiItem(itemchoice-1);       
-        selected.ApplyEffect(this);
-        inventory.removeFromInventory(itemchoice-1);
-        inventory.printInventory();
-        return true;
-    }
+      int choice = Integer.parseInt(newscan.next().trim()) - 1;
 
-    protected void gameStatus(boolean gameWon){
-        if (gameWon == true){
-            System.out.println("You have conquered the dungeon, ");
-            System.out.println("You Win!!");
-        }else {
-            System.out.println("YOU DIED");
-            System.out.println("Game Over!!");
-        }
-    }
+      if (choice < 0 || choice >= itemNames.size()){
+        System.out.println("Invalid choice, try again.");
+        continue;
+      }
 
-    protected void enemyDoDamage(int num){
-        int damage = enemies[num].basicAttack(player);
-        int damageTaken = player.takeDamage(damage);
-        System.out.print("You took " + damageTaken +" damage. ");
-        System.out.println("Health remaining: " + player.getHealth()+"\n");
+      String chosen = itemNames.get(choice);
+      inventory.getItem(chosen).ifPresent(item -> {
+        item.useItem(player, enemies);
+        inventory.consumeItem(chosen);
+      });
+      validItemUse = true;
     }
+  }
+  
+  protected void gameStatus(boolean gameWon){
+    if (gameWon == true){
+      System.out.println("You have conquered the dungeon, ");
+      System.out.println("You Win!!");
+    }else {
+      System.out.println("YOU DIED");
+      System.out.println("Game Over!!");
+    }
+  }
 }
-
 

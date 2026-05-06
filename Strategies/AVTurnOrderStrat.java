@@ -1,8 +1,10 @@
-package Characters;
+package Strategies;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import Characters.MainEntity;
 
 public class AVTurnOrderStrat implements TurnOrder{
     private Map<MainEntity, Integer> actionvals;

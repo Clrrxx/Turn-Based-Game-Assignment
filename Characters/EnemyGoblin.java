@@ -1,16 +1,19 @@
 package Characters;
 
+import java.util.ArrayList;
+
+import StatusEffects.TickingStatusEffect;
+import Strategies.ActionStrat;
+
 public class EnemyGoblin extends MainEnemy{
     private static final int BASE_HEALTH = 100;
     private static final int BASE_ATTACK = 35;
     private static final int BASE_DEFENSE = 15;
     private static final int BASE_SPEED = 25;
     private static final String NAME = "Goblin";
-    private int stunTurn = 0;
-    private int smokeTurn = 0;
 
     private final ActionStrat actionStrat;
-
+    private ArrayList<TickingStatusEffect> effectList = new ArrayList<TickingStatusEffect>();
 
     public EnemyGoblin(ActionStrat actionStrat){
         super(BASE_HEALTH, BASE_ATTACK, BASE_DEFENSE, BASE_SPEED);
@@ -23,59 +26,17 @@ public class EnemyGoblin extends MainEnemy{
     }
 
 
+    public void addStatusEffect(TickingStatusEffect effect){effectList.add(effect);}
+    public ArrayList<TickingStatusEffect> getStatusEffects(){return effectList;}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public int setStun(int duration){
-        stunTurn = duration; 
-        if (duration > 0){
-            System.out.println(NAME + " has been stunned for "+duration + " turns.\n");
-        }
-        return stunTurn;
-    }
-    
-    public int setSmoke(int duration){
-        smokeTurn = duration;
-        if (duration>0){
-            System.out.println("SmokeBomb was used, attack did not hit.");
-        }
-        return smokeTurn;
-    }
-    public boolean stunStatus(){return stunTurn>0;}
-    private void stunTick(){if (stunTurn>0) stunTurn--;}
-
-    public boolean smokeStatus(){return smokeTurn>0;}
-    private void smokeTick(){if (smokeTurn>0) smokeTurn--;}
-    public int getSkillCooldown(){return 0;}
-
-
-    public void tickAll(){stunTick();smokeTick();}
-
-    public int getActionValue(){return 1000/this.speed;}
-
-    public int effectiveDefense(){return this.defense;}
-    public int effectiveAttack(){return this.attack;}
-    
     public int takeDamage(int damage){
         this.health = Math.max(0, this.health - damage); 
         return damage;
     }
+
+    public int getActionValue(){return 1000/this.speed;}
+    public boolean isDead(){return this.health <= 0;}
 
     //resetting for level (in case)
     public void gameReset(){
@@ -85,9 +46,18 @@ public class EnemyGoblin extends MainEnemy{
         this.speed = BASE_SPEED;
     }
 
+    //filler commands
     public String getName(){return NAME;}
-
+    public void addDefense(int defense){}
+    public void removeDefense(int defense){}
+    public void addHealth(int health){}
+    public void addAttack(int attack){}
+    public void removeAttack(int attack){}
+    public int effectiveDefense(){return this.defense;}
+    public int effectiveAttack(){return this.attack;}
     public void printName(){System.out.print(NAME);}
+    public boolean isAoE(){return false;}
+    public int getbaseHP(){return BASE_HEALTH;}
     
     @Override
     public void showStats(){

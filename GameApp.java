@@ -6,6 +6,12 @@ import Items.Item;
 import Items.Potion;
 import Items.PowerStone;
 import Items.SmokeBomb;
+import Strategies.AVTurnOrderStrat;
+import Strategies.AoeTarget;
+import Strategies.BasicAtkStrat;
+import Strategies.DefendSkill;
+import Strategies.SingleTarget;
+import Strategies.UniSkill;
 import Characters.MainPlayer;
 import Difficulty.Difficulty;
 import Difficulty.DifficultyEasy;
@@ -23,6 +29,12 @@ public class GameApp {
   public static void main(String[] args) {
 
     Scanner scanner = new Scanner(System.in);
+    BasicAtkStrat BAttack = new BasicAtkStrat();
+    AVTurnOrderStrat turn = new AVTurnOrderStrat();
+    DefendSkill defenseSkill = new DefendSkill(10, 3);
+    UniSkill aoeTarget = new AoeTarget(3);
+    UniSkill singleTarget = new SingleTarget(3);
+    
 
     //print game title
     try (BufferedReader reader = new BufferedReader(new FileReader("gametitle.txt"))) {
@@ -37,7 +49,7 @@ public class GameApp {
     System.out.println("Welcome to Generic Text-Based Game 1111!");
     System.out.println("Will you conquer the dungeon? Or fall like the rest of the previous adventurers?");
 
-    //from this point in GameApp, this is counted as the loading screen. A GameSession will only be instantiated AFTER loading screen.
+    
     String userName;
 
     while (true){
@@ -55,7 +67,6 @@ public class GameApp {
       }
     }
 
-    //pass it to Warrior/Wizard object, not Main Player
     MainPlayer player = null;
     MainPlayer test = null;
     MainPlayer test2 = null;
@@ -64,12 +75,12 @@ public class GameApp {
       System.out.println("Select your class...");
       System.out.println();
 
-      test = new PlayerWarrior("Warrior");
+      test = new PlayerWarrior("Warrior", null);
       test.showStats();
       System.out.println("Press 1 to lock in your character. ");
       System.out.println();
 
-      test2 = new PlayerWizard("Wizard");
+      test2 = new PlayerWizard("Wizard", null);
       test2.showStats();
       System.out.println("Press 2 to lock in your character. ");
 
@@ -78,53 +89,42 @@ public class GameApp {
         int userInput = scanner.nextInt();
         scanner.nextLine();
         if (userInput != 1 && userInput != 2){
-              System.out.println("Invalid choice, Enter 1 or 2");
-            }else if (userInput == 1){
-              System.out.println("Selected Warrior!\n");
-              player = new PlayerWarrior(userName); 
-              System.out.println("Your stats/attributes are:\n");
-              //print out attributes
-              player.showStats();
-              break;
-            }else if (userInput == 2){
-              System.out.println("Selected Wizard!\n");
-              player = new PlayerWizard(userName);
-              System.out.println("Your stats/attributes are:\n");
-              //print out attributes
-              player.showStats();
-              break;
-            }
+          System.out.println("Invalid choice, Enter 1 or 2");
+        }else if (userInput == 1){
+          System.out.println("Selected Warrior!\n");
+          player = new PlayerWarrior(userName, BAttack); 
+          System.out.println("Your stats/attributes are:\n");
+          //print out attributes
+          player.showStats();
+          break;
+        }else if (userInput == 2){
+          System.out.println("Selected Wizard!\n");
+          player = new PlayerWizard(userName, BAttack);
+          System.out.println("Your stats/attributes are:\n");
+          //print out attributes
+          player.showStats();
+          break;
+        }
       }else {
         System.out.println("Invalid input, please enter a number!");
         scanner.nextLine();
       }
-    
     }
 
-    //option to pick items, so we need to show the list of items available.
     System.out.println();
     System.out.println("Select 2 items to aid your adventure, " + userName);
-
-    //BASED ON PROJECT SPECS, we HAVE to let user pick 2 items, not one or other number, but 2.
-    //we also have to print the number for each item.
-    //there are a total of 3 items in stated in the proj specs.
-
+  
     Item[] allItems = {
-      //new Potion("Potion"),
-      new Potion(),
-      //new Smokebomb("smokebomb")
+      new Potion(0),
       new PowerStone(),  
-      //new PowerStone("Power Stone"),
       new SmokeBomb()
     };
     int count = 0;
 
-    //stores the user's choice for whichever items they want
-    Inventory playerInv = new Inventory(2);
+    Inventory playerInv = new Inventory();
 
-    //System.out.println("Type in the item number and press enter for each item, you can select 2 items before your run");
 
-    //prints out the menu for easier item viewing. 
+
     while (count < 2){
       for (int i = 0; i < allItems.length; i++){
         System.out.println((i + 1) + ". " + allItems[i].getName());
@@ -142,27 +142,25 @@ public class GameApp {
         if (userSelect < 1 || userSelect > allItems.length){
           System.out.println("Invalid number, enter a number from 1 to 3.");
         }else{
-          //duplicate items ARE allowed.
+
           Item selected = allItems[userSelect -1];
-          if (selected instanceof Potion) playerInv.addToInventory(new Potion());
-          else if (selected instanceof PowerStone) playerInv.addToInventory(new PowerStone());
-          else if (selected instanceof SmokeBomb) playerInv.addToInventory(new SmokeBomb());
+          if (selected instanceof Potion) playerInv.addItem(selected, 1);
+          else if (selected instanceof PowerStone) playerInv.addItem(selected, 1);
+          else if (selected instanceof SmokeBomb) playerInv.addItem(selected, 1);
           
-          //Need to implement printing of item name
           System.out.println("You selected - " + allItems[userSelect - 1].getName()+"\n");
           count++;
         }
       }else {
         System.out.println("Invalid input, please enter a number!");
-        scanner.nextLine(); //clears the bad input from buffer.
+        scanner.nextLine();
       }
     }
-    playerInv.printInventory();
+
+    playerInv.printInv();
     System.out.println();
     
 
-    //user now selects Difficulty, Easy Medium or Hard, enemy needs to show their attributes too.
-    //this is the difficulty we will pass into GameSession
     Difficulty selectedDifficulty = null;
 
     DifficultyEasy easy = new DifficultyEasy();
@@ -188,19 +186,29 @@ public class GameApp {
         System.out.println("Please enter a valid choice: E, M or H and press enter.");
       }else {
         // match char to difficulty object
-        if (userChoice == 'E'){selectedDifficulty = easy; new GameSessionEasy(selectedDifficulty, player, playerInv);}
-        else if (userChoice == 'M'){selectedDifficulty = medium; new GameSessionMedium(selectedDifficulty, player, playerInv);}
-        else                        {selectedDifficulty = hard; new GameSessionHard(selectedDifficulty, player, playerInv);}
-
+        if (userChoice == 'E'){
+          selectedDifficulty = easy; 
+          GameSessionEasy gameEasy = new GameSessionEasy(selectedDifficulty, player, playerInv, turn, BAttack, defenseSkill, aoeTarget, singleTarget);
+          gameEasy.runCombatEasy();
+        }else if (userChoice == 'M'){
+          selectedDifficulty = medium; 
+          GameSessionMedium gameMed = new GameSessionMedium(selectedDifficulty, player, playerInv, turn, BAttack, defenseSkill, aoeTarget, singleTarget);
+          gameMed.runCombatMedium();
+        }else{
+          selectedDifficulty = hard; 
+          GameSessionHard gameHard = new GameSessionHard(selectedDifficulty, player, playerInv, turn, BAttack, defenseSkill, aoeTarget, singleTarget);
+          gameHard.runCombatHard();
+        }
     
         System.out.println("You selected: " + selectedDifficulty.getTier() + " difficulty.");
         break;
       }
+      scanner.close();
     }
-    //with these userSelected fields, we will construct a new GameSession.
-    scanner.close();
   }
 }
+
+
 
 
 
