@@ -5,11 +5,6 @@ Learning Outcomes
 • Implement an extensible and testable Java system.
 
 
-
-UML Diagram:
-// insert image here
-
-
 Documentation:
 
 - For Characters Package:
@@ -37,5 +32,7 @@ SmokeBomb (Prevents the enemies from dealing damage for enemy turns)
 
 Each entity has their own fixed action value which ticks down until their action value reaches 0, in which they will proceed to take a turn. After turn is done, AV resets. Each increase in difficulty will incurr more waves of enemies, with Easy difficulty only have 1 wave and hard having 3 waves. The player is only allowed to take 2 items with them and the items can stack. 
 
+Update:
+Refactored all the classes abiding by SOLID design principles. Now with Strategies and Status Effects, code can be updated much easier without snowballing effects. Implemented the use of modern Java as well. 
 
 
